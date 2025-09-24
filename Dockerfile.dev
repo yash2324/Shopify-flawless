@@ -1,0 +1,38 @@
+# Development Dockerfile with hot reload
+FROM node:18-alpine
+
+# Install dumb-init and development tools
+RUN apk add --no-cache dumb-init git
+
+# Create app user (optional for dev)
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Create logs directory
+RUN mkdir -p /app/logs && chown -R nestjs:nodejs /app/logs
+
+# Set development environment
+ENV NODE_ENV=development
+ENV PORT=3000
+
+# Expose port and debug port
+EXPOSE 3000 9229
+
+# Switch to non-root user (optional for dev)
+# USER nestjs
+
+# Copy source code (will be overridden by volume in docker-compose)
+COPY . .
+
+# Start with dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "run", "start:dev"]
