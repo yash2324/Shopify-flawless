@@ -158,7 +158,7 @@ export class DataCleanupService {
       // For now, we'll simulate the cleanup
       
       const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-      let removedCount = 0;
+      const removedCount = 0;
 
       // In a real implementation, you would scan for keys matching pattern
       // and check their timestamps, then delete old ones
@@ -212,7 +212,7 @@ export class DataCleanupService {
   private async cleanupOldPerformanceMetrics(): Promise<number> {
     try {
       // Clean up performance metrics older than 7 days
-      let removedCount = 0;
+      const removedCount = 0;
 
       // This would scan for performance metric keys and remove old ones
       // Implementation would depend on your key naming strategy
@@ -234,7 +234,7 @@ export class DataCleanupService {
       // Move old analytics data to long-term storage
       // This could involve moving data to a database or file storage
       
-      let archivedCount = 0;
+      const archivedCount = 0;
 
       // Implementation would move old cached analytics to persistent storage
       // and remove them from Redis cache
@@ -295,7 +295,7 @@ export class DataCleanupService {
   private async cleanupTemporaryKeys(): Promise<number> {
     try {
       // Clean up keys that start with 'temp:' or 'processing:'
-      let removedCount = 0;
+      const removedCount = 0;
 
       // In a real implementation, you would use Redis SCAN to find
       // temporary keys and remove expired ones
@@ -314,7 +314,7 @@ export class DataCleanupService {
   private async cleanupExpiredSessions(): Promise<number> {
     try {
       // Clean up expired user sessions or API keys
-      let removedCount = 0;
+      const removedCount = 0;
 
       // Implementation would clean up expired authentication tokens,
       // API rate limiting counters, etc.
