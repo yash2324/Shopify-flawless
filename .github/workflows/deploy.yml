@@ -101,19 +101,19 @@ jobs:
           # Create production environment file
           echo "⚙️ Setting up environment..."
           cat > .env.production << ENVEOF
-DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/shopify-analytics:latest
-SHOPIFY_SHOP_DOMAIN=${{ secrets.SHOPIFY_SHOP_DOMAIN }}
-SHOPIFY_ACCESS_TOKEN=${{ secrets.SHOPIFY_ACCESS_TOKEN }}
-REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
-NODE_ENV=production
-PORT=3000
-API_PREFIX=api/v1
-REDIS_HOST=redis
-REDIS_PORT=6379
-REDIS_DB=0
-REDIS_TTL=300
-ENVEOF
+          DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/shopify-analytics:latest
+          SHOPIFY_SHOP_DOMAIN=${{ secrets.SHOPIFY_SHOP_DOMAIN }}
+          SHOPIFY_ACCESS_TOKEN=${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+          NODE_ENV=production
+          PORT=3000
+          API_PREFIX=api/v1
+          REDIS_HOST=redis
+          REDIS_PORT=6379
+          REDIS_DB=0
+          REDIS_TTL=300
+          ENVEOF
           
           # Pull latest Docker image
           echo "🐳 Pulling Docker image..."
