@@ -88,31 +88,66 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          # Navigate to application directory
-          cd ~/shopify-analytics/app
+          set -e
+          
+          # Navigate to the cloned repository
+          cd ~/shopify-analytics/Shopify-flawless
           
           # Pull latest code
-          git pull origin main
+          echo "📥 Pulling latest code..."
+          git fetch origin
+          git reset --hard origin/main
           
-          # Update environment variables
-          echo "DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/shopify-analytics:latest" > .env.deploy
-          echo "SHOPIFY_SHOP_DOMAIN=${{ secrets.SHOPIFY_SHOP_DOMAIN }}" >> .env.deploy
-          echo "SHOPIFY_ACCESS_TOKEN=${{ secrets.SHOPIFY_ACCESS_TOKEN }}" >> .env.deploy
-          echo "REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" >> .env.deploy
-          echo "DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}" >> .env.deploy
+          # Create production environment file
+          echo "⚙️ Setting up environment..."
+          cat > .env.production << ENVEOF
+DOCKER_IMAGE=${{ secrets.DOCKER_USERNAME }}/shopify-analytics:latest
+SHOPIFY_SHOP_DOMAIN=${{ secrets.SHOPIFY_SHOP_DOMAIN }}
+SHOPIFY_ACCESS_TOKEN=${{ secrets.SHOPIFY_ACCESS_TOKEN }}
+REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+DOMAIN_NAME=${{ secrets.DOMAIN_NAME }}
+NODE_ENV=production
+PORT=3000
+API_PREFIX=api/v1
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_DB=0
+REDIS_TTL=300
+ENVEOF
           
           # Pull latest Docker image
+          echo "🐳 Pulling Docker image..."
           docker pull ${{ secrets.DOCKER_USERNAME }}/shopify-analytics:latest
           
-          # Deploy with zero downtime
+          # Stop existing containers if running
+          echo "🔄 Stopping existing containers..."
+          docker-compose -f docker-compose.production.yml down || true
+          
+          # Deploy with the new image
+          echo "🚀 Starting new containers..."
           docker-compose -f docker-compose.production.yml up -d
           
-          # Clean up old images
-          docker image prune -f
+          # Wait for services to start
+          echo "⏳ Waiting for services to start..."
+          sleep 60
           
-          # Health check
-          sleep 30
-          curl -f http://localhost/api/v1/health || exit 1
+          # Health check - try multiple endpoints
+          echo "🏥 Running health check..."
+          if curl -f http://localhost:3000/api/v1/health; then
+            echo "✅ Health check passed on port 3000"
+          elif curl -f http://localhost/api/v1/health; then
+            echo "✅ Health check passed through nginx"
+          else
+            echo "❌ Health check failed on both ports, checking logs..."
+            docker-compose -f docker-compose.production.yml logs --tail=50
+            echo "❌ Container status:"
+            docker ps
+            exit 1
+          fi
+          
+          # Clean up old images
+          echo "🧹 Cleaning up old images..."
+          docker image prune -f
           
           echo "✅ Deployment successful!"
         EOF
