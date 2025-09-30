@@ -13,7 +13,7 @@ services:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "R3d1s_S3cur3_P@ssw0rd_2024!", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,6 +36,7 @@ services:
       - API_PREFIX=api/v1
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=R3d1s_S3cur3_P@ssw0rd_2024!
       - REDIS_DB=0
       - REDIS_TTL=300
       - CACHE_TTL_SECONDS=300
