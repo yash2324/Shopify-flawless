@@ -129,10 +129,9 @@ coverage/
 # Build tools
 .eslintrc.js
 .prettierrc
-tsconfig*.json
-nest-cli.json
 
-# Development files
-src/
-*.ts
-!*.d.ts
+# Keep these files for building:
+# tsconfig*.json - needed for TypeScript compilation
+# nest-cli.json - needed for NestJS build
+# src/ - source code directory
+# *.ts files - TypeScript source files

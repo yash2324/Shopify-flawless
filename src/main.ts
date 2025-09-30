@@ -90,40 +90,38 @@ async function bootstrap() {
   );
 
   // Swagger API documentation
-  if (appConfig.nodeEnv !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Shopify Analytics API')
-      .setDescription(
-        'High-performance REST API for Shopify analytics dashboard with real-time data synchronization and comprehensive business intelligence features.'
-      )
-      .setVersion('1.0.0')
-      .addTag('Dashboard', 'Main dashboard endpoints for summary data')
-      .addTag('Analytics', 'Detailed analytics endpoints for specific data types')
-      .addTag('Health', 'System health and monitoring endpoints')
-      .addTag('System', 'System administration and maintenance endpoints')
-      .addServer(`http://localhost:${port}`, 'Local development server')
-      .addServer(`https://api.yourdomain.com`, 'Production server')
-      .build();
+  const config = new DocumentBuilder()
+    .setTitle('Shopify Analytics API')
+    .setDescription(
+      'High-performance REST API for Shopify analytics dashboard with real-time data synchronization and comprehensive business intelligence features.'
+    )
+    .setVersion('1.0.0')
+    .addTag('Dashboard', 'Main dashboard endpoints for summary data')
+    .addTag('Analytics', 'Detailed analytics endpoints for specific data types')
+    .addTag('Health', 'System health and monitoring endpoints')
+    .addTag('System', 'System administration and maintenance endpoints')
+    .addServer(`http://localhost:${port}`, 'Local development server')
+    .addServer(`https://api.yourdomain.com`, 'Production server')
+    .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
-      customSiteTitle: 'Shopify Analytics API Documentation',
-      customfavIcon: '/favicon.ico',
-      customCss: '.swagger-ui .topbar { display: none }',
-      swaggerOptions: {
-        persistAuthorization: true,
-        displayRequestDuration: true,
-        filter: true,
-        showExtensions: true,
-        showCommonExtensions: true,
-        docExpansion: 'none',
-        defaultModelsExpandDepth: 2,
-        defaultModelExpandDepth: 2,
-      },
-    });
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
+    customSiteTitle: 'Shopify Analytics API Documentation',
+    customfavIcon: '/favicon.ico',
+    customCss: '.swagger-ui .topbar { display: none }',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      showExtensions: true,
+      showCommonExtensions: true,
+      docExpansion: 'none',
+      defaultModelsExpandDepth: 2,
+      defaultModelExpandDepth: 2,
+    },
+  });
 
-    logger.info(`Swagger documentation available at: http://localhost:${port}/${apiPrefix}/docs`);
-  }
+  logger.info(`Swagger documentation available at: http://localhost:${port}/${apiPrefix}/docs`);
 
   // Graceful shutdown handlers
   process.on('SIGTERM', async () => {
@@ -160,10 +158,7 @@ async function bootstrap() {
   logger.info(`🔍 Health check: http://localhost:${port}/${apiPrefix}/health`);
   logger.info(`📋 Dashboard: http://localhost:${port}/${apiPrefix}/dashboard/summary`);
   logger.info(`⚡ Real-time: http://localhost:${port}/${apiPrefix}/dashboard/realtime`);
-  
-  if (appConfig.nodeEnv !== 'production') {
-    logger.info(`📖 API Docs: http://localhost:${port}/${apiPrefix}/docs`);
-  }
+  logger.info(`📖 API Docs: http://localhost:${port}/${apiPrefix}/docs`);
 
   // Performance monitoring
   const memUsage = process.memoryUsage();

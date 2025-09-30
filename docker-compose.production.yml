@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Redis Cache Service
+  redis:
+    image: redis:7-alpine
+    container_name: shopify-redis-prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"  # Only bind to localhost for security
+    volumes:
+      - redis_prod_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shopify-prod-network
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+
+  # NestJS Application
+  app:
+    image: ${DOCKER_IMAGE:-shopify-analytics:latest}
+    container_name: shopify-analytics-api-prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"  # Only bind to localhost, Nginx will proxy
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - API_PREFIX=api/v1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=0
+      - REDIS_TTL=300
+      - CACHE_TTL_SECONDS=300
+      - DASHBOARD_DATA_TTL=60
+      - THROTTLE_TTL=60
+      - THROTTLE_LIMIT=100
+      - SHOPIFY_SYNC_CRON=0 * * * * *
+      - DATA_CLEANUP_CRON=0 0 * * *
+      - LOG_LEVEL=info
+      - MAX_CONCURRENT_SHOPIFY_REQUESTS=5
+      - REQUEST_TIMEOUT=30000
+      - SHOPIFY_SHOP_DOMAIN=${SHOPIFY_SHOP_DOMAIN}
+      - SHOPIFY_ACCESS_TOKEN=${SHOPIFY_ACCESS_TOKEN}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - /etc/localtime:/etc/localtime:ro  # Sync server time
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - shopify-prod-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Note: Nginx runs directly on the EC2 system (not containerized)
+  # This provides better SSL termination and performance
+
+volumes:
+  redis_prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/ubuntu/shopify-analytics/data/redis
+
+networks:
+  shopify-prod-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
