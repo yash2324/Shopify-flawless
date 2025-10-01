@@ -68,14 +68,6 @@ async function bootstrap() {
   // Enable compression
   app.use(compression());
 
-  // Enable CORS for frontend access
-  app.enableCors({
-    origin: ['http://localhost:3000', 'http://localhost:3001',"https://flawless-dashboard-fe.vercel.app"],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    credentials: true,
-  });
-
   // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
